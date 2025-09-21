@@ -1,0 +1,411 @@
+/* safe reset */
+* { box-sizing: border-box; }
+
+/* always avoid horizontal scroll */
+html, body {
+  margin: 0;
+  padding: 0;
+  height: 100%;
+  overflow-x: hidden;      /* prevent horizontal scroll */
+  /* force vertical scrollbar so layout doesn't jump when it appears/disappears */
+  overflow-y: scroll;
+}
+
+/* background: use resized image (16:9) and cover */
+body {
+  font-family: Inter, Arial, sans-serif;
+  background: url("/bg.jpeg") no-repeat center center fixed;
+  background-size: cover;   /* fills screen without black bars if image is 16:9 */
+  background-color: #000;
+  color: #fff;
+}
+
+/* main container: center and never overflow horizontally */
+.main, .container {
+  width: 100%;
+  max-width: 1200px;   /* adjust to your layout */
+  margin: 0 auto;
+  padding: 30px;
+  overflow: visible;   /* normal */
+}
+
+
+/*================== Glass card ======================*/
+.app-card {
+  max-width: 700px;              /* narrower */
+  margin: 50px auto;             /* more top-bottom spacing */
+  padding: 30px;                 /* more padding inside */
+  background: rgba(0, 0, 0, 0.25);
+  border-radius: 16px;
+  box-shadow: 0 8px 30px rgba(0,0,0,0.4);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+}
+
+
+/*=================== NER ======================*/
+.main-title {
+  position: relative;
+  display: inline-block;
+  margin: 6px 0 16px;
+  font-size: 56px;            /* tweak if needed */
+  font-weight: 900;
+  letter-spacing: 4px;
+  color: #0ff8ff;             /* main color */
+  text-shadow:
+    0 0 6px rgba(0,255,255,0.18),
+    0 6px 20px rgba(0,200,255,0.12),
+    0 0 40px rgba(0,200,255,0.15);
+  -webkit-font-smoothing: antialiased;
+  z-index: 2;
+
+  /* floating motion */
+  animation:
+    floatY 6s ease-in-out infinite,
+    glowPulse 3.5s ease-in-out infinite;
+  transform-origin: center;
+}
+
+/* subtle floating up/down */
+@keyframes floatY {
+  0%   { transform: translateY(0px) }
+  50%  { transform: translateY(-8px) } /* move up 8px */
+  100% { transform: translateY(0px) }
+}
+
+/* glow pulse (brightness / faint blur change) */
+@keyframes glowPulse {
+  0%   { text-shadow: 0 0 4px rgba(0,255,255,0.10), 0 6px 20px rgba(0,150,255,0.06); filter: saturate(1); }
+  50%  { text-shadow: 0 0 14px rgba(0,255,255,0.28), 0 10px 36px rgba(0,150,255,0.12); filter: saturate(1.05) contrast(1.02); }
+  100% { text-shadow: 0 0 4px rgba(0,255,255,0.10), 0 6px 20px rgba(0,150,255,0.06); filter: saturate(1); }
+}
+
+/* sliding shine across text (very subtle) */
+.main-title::after {
+  content: "";
+  position: absolute;
+  left: -120%;
+  top: -20%;
+  width: 60%;
+  height: 140%;
+  transform: skewX(-18deg);
+  background: linear-gradient(90deg, rgba(255,255,255,0.00), rgba(255,255,255,0.06), rgba(255,255,255,0.00));
+  pointer-events: none;
+  filter: blur(8px);
+  opacity: 0.8;
+  animation: shine 6s linear infinite;
+}
+
+/* control shine timing so it appears occasionally */
+@keyframes shine {
+  0%    { left: -120%; opacity: 0; }
+  10%   { left: -60%;  opacity: 0.2; }
+  30%   { left: -10%;  opacity: 0.35; }
+  40%   { left: 10%;   opacity: 0.18; }
+  60%   { left: 50%;   opacity: 0.05; }
+  100%  { left: 120%;  opacity: 0; }
+}
+
+/* optional: stronger glow on hover (makes it interactive) */
+.main-title:hover {
+  animation-play-state: running;
+  transform: translateY(-6px) scale(1.02);
+  text-shadow:
+    0 0 20px rgba(0,255,255,0.32),
+    0 12px 40px rgba(0,200,255,0.18),
+    0 0 60px rgba(0,200,255,0.18);
+}
+
+/* =================== Text Input ===================*/
+textarea, input, select {
+  width: 100%;
+  padding: 10px;
+  margin: 8px 0;
+  border: none;
+  border-radius: 6px;
+  background: rgba(255,255,255,0.08);
+  color: #fff;
+}
+textarea::placeholder, input::placeholder {
+  color: #ccc;
+}
+.main-title {
+  display: flex;
+  justify-content: center;  /* horizontal center */
+  align-items: center;      /* vertical center (if needed) */
+}
+
+/* ===================== Additional Input ================= */
+.opt-box textarea {
+  width: 100%;
+  padding: 8px 10px;          /* reduce side padding */
+  margin-bottom: 8px;
+  border-radius: 6px;
+  border: 1px solid rgba(255,255,255,0.06);
+  background: rgba(255,255,255,0.03);
+  color: #fff;
+  font-size: 14px;
+  line-height: 1.4;
+  resize: vertical;           /* allow resize if needed */
+  box-sizing: border-box;     /* ensures padding doesn’t push text */
+}
+
+/*================== Additional Buttons ======================*/
+button {
+  background: #00f0ea;
+  color: #08121a;
+  padding: 12px 16px;
+  border-radius: 10px;
+  border: none;
+  cursor: pointer;
+  font-weight: 700;
+}
+button[disabled] { opacity: 0.6; cursor: not-allowed; }
+
+/* option radios row */
+.options-row {
+  display: flex;
+  flex-direction: column;   /* stack options one below another */
+  gap: 12px;
+  align-items: flex-start;  /* keep them aligned left */
+}
+
+.radio-label {
+  font-size: 15px;
+  cursor: pointer;
+  display: inline-flex;      /* inline radio + text */
+  align-items: center;
+  gap: 8px;                  /* spacing between circle and text */
+  color: #fff;
+  white-space: nowrap;       /* keep text in one line */
+}
+
+.radio-label input {
+  accent-color: #00f7ff;  /* neon cyan for selected radio */
+  margin: 0;              /* remove weird spacing */
+}
+
+
+.radio-label input { 
+  transform: scale(1.05);
+  accent-color: #1f8fff; 
+}
+
+.radio-label:hover { 
+  background: rgba(255,255,255,0.02); 
+  transform: translateY(-1px); 
+}
+
+.radio-label.active { 
+  background: linear-gradient(90deg, rgba(31,143,255,0.14), rgba(255,255,255,0.02)); 
+  box-shadow: 0 6px 18px rgba(31,143,255,0.08) inset; 
+}
+
+/* Additional text opt box */
+.opt-box { 
+  margin-top: 12px; 
+  padding:16px; 
+  background: rgba(255,255,255,0.02); 
+  border-radius:8px; 
+  border:1px solid rgba(255,255,255,0.03); 
+}
+
+/* entity chips for highlighted view */
+.entity-chip {
+  display:inline-block;
+  padding:4px 8px;
+  margin:0 6px 6px 0;
+  border-radius:8px;
+  font-weight:600;
+  color:#081a2c;
+}
+
+/* summary table */
+.entity-table {
+  border-collapse: collapse;
+  width: 100%;
+  margin-top: 8px;
+}
+.entity-table td, .entity-table th {
+  padding: 8px 10px;
+  border-bottom: 1px solid rgba(255,255,255,0.04);
+  text-align: left;
+}
+
+/* highlighted entity inline styles (fallback) */
+.app-card span[title] {
+  /* inline styles applied from JS; this rule only ensures good spacing */
+  line-height: 1.6;
+}
+
+/* Stylish heading for the 'Text' label */
+.text-heading {
+  font-family: 'Poppins', sans-serif;  /* modern font */
+  font-size: 20px;
+  font-weight: 600;
+  text-align: center;                  /* center it */
+  margin-bottom: 10px;
+
+  /* gradient text effect */
+  background: linear-gradient(90deg, #00f2fe, #4facfe);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+
+  /* glow effect */
+  text-shadow: 0 0 8px rgba(79, 172, 254, 0.8), 0 0 14px rgba(0, 242, 254, 0.6);
+}
+
+/* Label */
+.output-label {
+  margin-bottom: 8px;
+  font-weight: 700;
+  color: #0ff;
+  text-shadow: 0 0 6px rgba(0, 255, 255, 0.5);
+}
+
+/* Dropdown */
+.output-select {
+  width: 320px;
+  padding: 10px 12px;
+  border-radius: 6px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: rgba(10, 12, 18, 0.85);
+  color: #fff;
+  font-size: 15px;
+  outline: none;
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.6);
+  appearance: menulist; /* makes it look clean */
+}
+
+/* Focus effect (cyan glow) */
+.output-select:focus {
+  border-color: #0ff;
+  box-shadow: 0 0 8px #0ff, 0 0 20px rgba(0, 255, 255, 0.6);
+}
+
+/* Hint text */
+.output-hint {
+  margin-top: 8px;
+  color: #bbb;
+  font-size: 13px;
+}
+
+
+/*================= Stylish headings (Text + Additional Options) ================*/
+.stylish-heading {
+  font-family: 'Poppins', sans-serif;  /* modern font */
+  font-size: 20px;
+  font-weight: 600;
+  text-align: left;   /* 👈 changed from center to left */
+  margin: 20px 0 10px 0;
+
+  /* gradient text effect */
+  background: linear-gradient(90deg, #00f2fe, #4facfe);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+
+  /* glow effect */
+  text-shadow: 0 0 8px rgba(79, 172, 254, 0.8),
+               0 0 14px rgba(0, 242, 254, 0.6);
+}
+
+
+/*==================== Run button =======================*/
+.run-container {
+  display: flex;
+  justify-content: center; /* centers button horizontally */
+  margin-top: 20px;
+}
+
+/* Run button styling */
+.run-btn {
+  background: linear-gradient(90deg, #6ef195, #32cd32); /* light green gradient */
+  color: #000;
+  font-size: 16px;
+  font-weight: bold;
+  padding: 12px 30px;
+  border: none;
+  border-radius: 30px;
+  cursor: pointer;
+  transition: all 0.3s ease-in-out;
+
+  /* Green glow */
+  box-shadow: 0 0 15px rgba(50, 205, 50, 0.8), 
+              0 0 30px rgba(34, 139, 34, 0.6);
+}
+
+/* Hover effect */
+.run-btn:hover {
+  transform: scale(1.08);
+  box-shadow: 0 0 20px rgba(50, 205, 50, 1), 
+              0 0 40px rgba(34, 139, 34, 0.9);
+}
+
+/* Active (click) state */
+.run-btn:active {
+  background: linear-gradient(90deg, #228b22, #006400); /* dark green */
+  transform: scale(0.96);
+  box-shadow: 0 0 12px rgba(34, 139, 34, 0.8), 
+              0 0 25px rgba(0, 100, 0, 0.7);
+}
+
+/* Disabled state */
+.run-btn:disabled {
+  background: #555;
+  color: #aaa;
+  cursor: not-allowed;
+  box-shadow: none;
+}
+
+
+/*====================== Output heading ========================*/
+h3 {
+  font-family: 'Poppins', sans-serif;
+  font-size: 22px;
+  font-weight: 700;
+  margin-bottom: 10px;
+  background: linear-gradient(90deg, #ff6ec7, #d66efd);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  text-shadow: 0 0 10px rgba(214,110,253,0.6), 0 0 20px rgba(214,110,253,0.4);
+}
+
+/* Style specifically the Output heading (h3) */
+h3 {
+  font-family: 'Poppins', sans-serif;
+  font-size: 22px;
+  font-weight: 700;
+  margin-bottom: 10px;
+
+  /* gradient text */
+  background: linear-gradient(90deg, #00f2fe, #4facfe);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+
+  /* glowing effect */
+  text-shadow: 0 0 12px rgba(0, 242, 254, 0.7), 
+               0 0 24px rgba(79, 172, 254, 0.6),
+               0 0 40px rgba(79, 172, 254, 0.4);
+}
+
+/* Output box (the container after Output heading) */
+pre {
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(79, 172, 254, 0.3);
+  border-radius: 14px;
+  padding: 18px;
+  margin-top: 12px;
+  color: #e6faff;
+  font-size: 15px;
+
+  /* glowing box effect */
+  box-shadow: 0 0 20px rgba(79, 172, 254, 0.35),
+              inset 0 0 28px rgba(0, 242, 254, 0.15);
+  transition: box-shadow 0.3s ease, transform 0.3s ease;
+}
+
+pre:hover {
+  transform: scale(1.01);
+  box-shadow: 0 0 28px rgba(79, 172, 254, 0.5),
+              inset 0 0 36px rgba(0, 242, 254, 0.25);
+}
